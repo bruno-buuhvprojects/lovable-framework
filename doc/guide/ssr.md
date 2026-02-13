@@ -6,7 +6,7 @@ Create a module that registers routes and exports a `render(url)` that uses the 
 
 ```tsx
 // src/ssr/entry-server.tsx (or src/entry-server.tsx)
-import { registerRoutes, render as frameworkRender } from 'lovable-framework';
+import { registerRoutes, render as frameworkRender } from 'lovable-ssr';
 import { routes } from '@/routes';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -45,7 +45,7 @@ Run the Express + Vite server using `createServer` from the **server** subpath (
 // src/ssr/server.ts
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createServer } from 'lovable-framework/server';
+import { createServer } from 'lovable-ssr/server';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '../..');

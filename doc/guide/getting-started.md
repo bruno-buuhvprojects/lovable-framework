@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-npm i lovable-framework
+npm i lovable-ssr
 ```
 
 Peer dependencies: `react` (^18), `react-dom` (^18), `react-router-dom` (^6).
@@ -12,7 +12,7 @@ Peer dependencies: `react` (^18), `react-dom` (^18), `react-router-dom` (^6).
 
 1. **Define routes** and call `registerRoutes(routes)` so the framework can match URLs and run `getServerData` when needed.
 2. **Wrap your app** with `BrowserRouteDataProvider` and render `AppRoutes` (inside `BrowserRouter`).
-3. **(Optional) SSR** — add an entry module that calls the framework’s `render` with your wrappers, and a small server that uses `createServer` from `lovable-framework/server`.
+3. **(Optional) SSR** — add an entry module that calls the framework’s `render` with your wrappers, and a small server that uses `createServer` from `lovable-ssr/server`.
 
 The framework provides:
 

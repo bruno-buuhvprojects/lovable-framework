@@ -1,11 +1,13 @@
-# lovable-framework
+# lovable-ssr
 
 SSR and route data engine for [Lovable](https://lovable.dev) projects. Provides a route registry (singleton), `getServerData`-based data loading for SSR and SPA navigation, and an Express + Vite server.
+
+**Documentation:** [Documentação completa](https://calm-meadow-5cf6.github-8c8.workers.dev/)
 
 ## Installation
 
 ```bash
-npm i lovable-framework
+npm i lovable-ssr
 ```
 
 Peer dependencies: `react`, `react-dom`, `react-router-dom` (^18 / ^6).
@@ -18,7 +20,7 @@ Define your routes and call `registerRoutes` so the framework can match paths an
 
 ```ts
 // src/routes.ts (or wherever you define routes)
-import { registerRoutes, type RouteConfig, type ComponentWithGetServerData } from 'lovable-framework';
+import { registerRoutes, type RouteConfig, type ComponentWithGetServerData } from 'lovable-ssr';
 import HomePage from '@/pages/HomePage';
 import VideoPage from '@/pages/VideoPage';
 
@@ -38,7 +40,7 @@ Ensure routes are loaded (so the registry is filled), then use `BrowserRouteData
 ```tsx
 // src/App.tsx
 import './routes'; // runs registerRoutes(routes)
-import { BrowserRouteDataProvider, AppRoutes } from 'lovable-framework';
+import { BrowserRouteDataProvider, AppRoutes } from 'lovable-ssr';
 import { BrowserRouter } from 'react-router-dom';
 
 export default function App() {
@@ -60,7 +62,7 @@ For SSR, add an entry module that registers routes and calls the framework’s `
 
 ```tsx
 // src/entry-server.tsx
-import { registerRoutes, render as frameworkRender } from 'lovable-framework';
+import { registerRoutes, render as frameworkRender } from 'lovable-ssr';
 import { routes } from '@/routes';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -85,7 +87,7 @@ Run the Express + Vite server using the framework’s `createServer` (import fro
 // src/ssr/server.ts
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createServer } from 'lovable-framework/server';
+import { createServer } from 'lovable-ssr/server';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '../..');
@@ -114,7 +116,7 @@ Scripts:
 - **Data:** `RouteDataProvider`, `useRouteData()`, `buildRouteKey(path, params)`, `RouteDataState`, `InitialRouteShape`
 - **UI:** `AppRoutes` (no props), `BrowserRouteDataProvider` (wraps children with `RouteDataProvider` using `window.__PRELOADED_DATA__` and current pathname; use inside `BrowserRouter`)
 - **SSR:** `render(url, options?)` with `options.wrap = (children) => ReactNode`
-- **Server:** `createServer(config)` and `runServer(config?)` from `lovable-framework/server`
+- **Server:** `createServer(config)` and `runServer(config?)` from `lovable-ssr/server`
 
 ## Pages with `getServerData`
 

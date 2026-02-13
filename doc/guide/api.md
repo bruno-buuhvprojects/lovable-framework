@@ -46,9 +46,9 @@
 |--------|-------------|
 | `render(url: string, options?: RenderOptions)` | Returns `Promise<{ html: string; preloadedData }>`. `options.wrap` can wrap the inner tree (e.g. QueryClient, Toaster). |
 
-## Server (lovable-framework/server)
+## Server (lovable-ssr/server)
 
-Import from `lovable-framework/server` so Node/Express are not bundled in the client.
+Import from `lovable-ssr/server` so Node/Express are not bundled in the client.
 
 | Export | Description |
 |--------|-------------|

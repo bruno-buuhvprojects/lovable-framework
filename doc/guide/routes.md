@@ -10,7 +10,7 @@ import {
   registerRoutes,
   type RouteConfig,
   type ComponentWithGetServerData,
-} from 'lovable-framework';
+} from 'lovable-ssr';
 import HomePage from '@/pages/HomePage';
 import VideoPage from '@/pages/VideoPage';
 import NotFound from '@/pages/NotFound';

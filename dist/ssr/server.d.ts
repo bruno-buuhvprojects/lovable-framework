@@ -15,7 +15,7 @@ export declare function createServer(config: CreateServerConfig): Promise<{
     getApp: () => Express;
     listen: (port?: number, callback?: () => void) => void;
 }>;
-/** Standalone: run server when this file is executed (e.g. tsx packages/lovable-framework/src/ssr/server.ts).
+/** Standalone: run server when this file is executed (e.g. tsx packages/lovable-ssr/src/ssr/server.ts).
  * Set env ROOT, ENTRY_PATH, PORT or use defaults. */
 export declare function runServer(config?: Partial<CreateServerConfig>): void;
 //# sourceMappingURL=server.d.ts.map

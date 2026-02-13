@@ -1,6 +1,6 @@
-# lovable-framework docs
+# lovable-ssr docs
 
-Developer documentation for **lovable-framework**, built with [VitePress](https://vitepress.dev/). See the main README in the repo root for a short overview.
+Developer documentation for **lovable-ssr**, built with [VitePress](https://vitepress.dev/). See the main README in the repo root for a short overview.
 
 ## Run locally
 

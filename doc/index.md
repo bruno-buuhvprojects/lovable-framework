@@ -1,4 +1,4 @@
-# lovable-framework
+# lovable-ssr
 
 SSR and route data engine for [Lovable](https://lovable.dev) projects.
 
@@ -18,12 +18,12 @@ SSR and route data engine for [Lovable](https://lovable.dev) projects.
 ## Minimal setup
 
 ```bash
-npm i lovable-framework
+npm i lovable-ssr
 ```
 
 ```ts
 // routes
-import { registerRoutes, type RouteConfig } from 'lovable-framework';
+import { registerRoutes, type RouteConfig } from 'lovable-ssr';
 export const routes: RouteConfig[] = [/* ... */];
 registerRoutes(routes);
 ```
@@ -31,7 +31,7 @@ registerRoutes(routes);
 ```tsx
 // App
 import './routes';
-import { BrowserRouteDataProvider, AppRoutes } from 'lovable-framework';
+import { BrowserRouteDataProvider, AppRoutes } from 'lovable-ssr';
 import { BrowserRouter } from 'react-router-dom';
 
 export default function App() {
@@ -45,4 +45,4 @@ export default function App() {
 }
 ```
 
-For SSR you add an entry module and a small server that uses `createServer` from `lovable-framework/server`. See the [guide](/guide/getting-started) for the full flow.
+For SSR you add an entry module and a small server that uses `createServer` from `lovable-ssr/server`. See the [guide](/guide/getting-started) for the full flow.

@@ -137,7 +137,7 @@ export async function createServer(config) {
         listen: (port, callback) => server.listen(port, callback),
     };
 }
-/** Standalone: run server when this file is executed (e.g. tsx packages/lovable-framework/src/ssr/server.ts).
+/** Standalone: run server when this file is executed (e.g. tsx packages/lovable-ssr/src/ssr/server.ts).
  * Set env ROOT, ENTRY_PATH, PORT or use defaults. */
 export function runServer(config) {
     const root = config?.root ?? process.cwd();

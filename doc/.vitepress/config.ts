@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress';
 
 export default defineConfig({
-  title: 'lovable-framework',
+  title: 'lovable-ssr',
   description: 'SSR and route data engine for Lovable projects',
   base: '/',
   ignoreDeadLinks: true,

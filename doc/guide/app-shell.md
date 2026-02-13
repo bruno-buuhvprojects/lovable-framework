@@ -7,7 +7,7 @@ After routes are registered, use the framework’s components inside your router
 ```tsx
 // src/App.tsx
 import './routes'; // runs registerRoutes(routes)
-import { BrowserRouteDataProvider, AppRoutes } from 'lovable-framework';
+import { BrowserRouteDataProvider, AppRoutes } from 'lovable-ssr';
 import { BrowserRouter } from 'react-router-dom';
 
 export default function App() {
@@ -34,7 +34,7 @@ export default function App() {
 If you prefer to control the initial data (e.g. in tests), you can use `RouteDataProvider` and `RouterService` instead of `BrowserRouteDataProvider`:
 
 ```tsx
-import { RouterService, RouteDataProvider, AppRoutes } from 'lovable-framework';
+import { RouterService, RouteDataProvider, AppRoutes } from 'lovable-ssr';
 
 const preloadedData = typeof window !== 'undefined' ? (window.__PRELOADED_DATA__ ?? {}) : {};
 const pathname = typeof window !== 'undefined' ? window.location.pathname || '/' : '/';

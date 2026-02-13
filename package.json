@@ -1,5 +1,5 @@
 {
-  "name": "lovable-framework",
+  "name": "lovable-ssr",
   "version": "0.1.1",
   "description": "SSR and route data engine for Lovable projects",
   "type": "module",
@@ -20,7 +20,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run build:docs",
     "dev": "tsc --watch",
     "changelog": "standard-version --message \"[skip ci]\"",
     "changelog:rc": "npm run changelog -- --prerelease rc --skip.changelog --skip.tag",
