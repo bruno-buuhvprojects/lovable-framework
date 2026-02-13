@@ -2,15 +2,17 @@
 
 ## 1. Entry module
 
-Create a module that registers routes and exports a `render(url)` that uses the framework’s `render` and your app wrappers (e.g. QueryClient, Toaster):
+Create a module that registers routes and exports a `render(url)` that uses the framework’s `render` and your app wrappers (e.g. QueryClient, Toaster). The server preloads this entry at startup so `registerRoutes(routes)` runs and the route registry is filled before the first request.
 
 ```tsx
 // src/ssr/entry-server.tsx (or src/entry-server.tsx)
-import { render as frameworkRender } from 'lovable-ssr';
+import { registerRoutes, render as frameworkRender } from 'lovable-ssr';
+import { routes } from '@/routes';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 
+registerRoutes(routes);
 const queryClient = new QueryClient();
 
 export interface RenderResult {
@@ -36,18 +38,13 @@ The framework’s `render(url, options)` resolves the route, runs `getServerData
 
 ## 2. Server script
 
-Run the Express + Vite server using `createServer` from the **server** subpath (so Node-only code is not bundled in the client). **Import your routes module before `createServer()`** so the route registry is populated when the server starts; the server calls `RouterService.isSsrRoute(pathname)` on each request, and that reads from the registry — if it’s empty (because the entry is only loaded later), every route is treated as SPA.
+Run the Express + Vite server using `createServer` from the **server** subpath (so Node-only code is not bundled in the client). The framework **preloads your entry module at startup** (before accepting requests), so `registerRoutes(routes)` runs and the route registry is filled; that way `RouterService.isSsrRoute(pathname)` works on the first request. Do **not** import your routes module in `server.ts` — that would load React page components in plain Node (e.g. via `tsx`) and can cause “React is not defined” or resolution issues; the entry is loaded correctly via Vite’s `ssrLoadModule` or the built bundle.
 
 ```ts
 // src/ssr/server.ts
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'lovable-ssr/server';
-import { registerRoutes } from 'lovable-ssr';
-
-import { routes } from '@/routes';//adjust for your path
-// Ensures the route registry is populated before the first request (isSsrRoute, etc.)
-registerRoutes(routes);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '../..');

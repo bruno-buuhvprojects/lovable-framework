@@ -14,6 +14,7 @@ class SsrServer {
     vite;
     config;
     isProd;
+    _rendererCache;
     constructor(config) {
         this.config = {
             root: path.resolve(config.root),
@@ -29,7 +30,15 @@ class SsrServer {
         await server.configureVite();
         server.configureStaticAssets();
         server.configureRequestHandler();
+        // Preload entry so registerRoutes() runs and the route registry is filled before the first request (isSsrRoute).
+        await server.ensureEntryLoaded();
         return server;
+    }
+    /** Load the entry module once at startup so the route registry is populated before any request. */
+    async ensureEntryLoaded() {
+        if (!this._rendererCache) {
+            this._rendererCache = await this.getSsrRenderer();
+        }
     }
     async configureVite() {
         if (this.isProd)
@@ -89,6 +98,8 @@ class SsrServer {
         return res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
     }
     async getSsrRenderer() {
+        if (this._rendererCache)
+            return this._rendererCache;
         if (this.vite) {
             const template = this.injectCssInDev(this.readTemplate(path.join(this.config.root, 'index.html')));
             const entry = await this.vite.ssrLoadModule(path.join(this.config.root, this.config.entryPath));

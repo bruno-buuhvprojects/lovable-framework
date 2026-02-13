@@ -30,6 +30,10 @@ class SsrServer {
   private vite: ViteDevServer | undefined;
   private readonly config: Required<CreateServerConfig>;
   private readonly isProd: boolean;
+  private _rendererCache?: {
+    template: string;
+    render: (url: string) => Promise<RenderResult>;
+  };
 
   constructor(config: CreateServerConfig) {
     this.config = {
@@ -48,7 +52,16 @@ class SsrServer {
     await server.configureVite();
     server.configureStaticAssets();
     server.configureRequestHandler();
+    // Preload entry so registerRoutes() runs and the route registry is filled before the first request (isSsrRoute).
+    await server.ensureEntryLoaded();
     return server;
+  }
+
+  /** Load the entry module once at startup so the route registry is populated before any request. */
+  private async ensureEntryLoaded(): Promise<void> {
+    if (!this._rendererCache) {
+      this._rendererCache = await this.getSsrRenderer();
+    }
   }
 
   private async configureVite() {
@@ -119,6 +132,7 @@ class SsrServer {
     template: string;
     render: (url: string) => Promise<RenderResult>;
   }> {
+    if (this._rendererCache) return this._rendererCache;
     if (this.vite) {
       const template = this.injectCssInDev(
         this.readTemplate(path.join(this.config.root, 'index.html'))

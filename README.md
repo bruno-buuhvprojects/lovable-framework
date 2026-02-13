@@ -81,15 +81,13 @@ export async function render(url: string) {
 
 ### 4. SSR server (optional)
 
-Run the Express + Vite server using the framework’s `createServer` (import from the `server` subpath so Node-only code is not bundled in the client). **You must import your routes module before `createServer()`** so the route registry is filled when the server starts; otherwise `isSsrRoute(pathname)` sees an empty list and every request is treated as SPA.
+Run the Express + Vite server using the framework’s `createServer` (import from the `server` subpath so Node-only code is not bundled in the client). The server **preloads your entry module at startup** so `registerRoutes(routes)` runs and the route registry is filled before the first request; that way `isSsrRoute(pathname)` works correctly. You do **not** import the routes module in `server.ts` (that would pull React components into Node before Vite is ready and can cause “React is not defined” or similar).
 
 ```ts
 // src/ssr/server.ts
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'lovable-ssr/server';
-// Ensures the route registry is populated before the first request (isSsrRoute, etc.)
-import '../application/routes';  // or '@/routes' depending on your path aliases
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '../..');
