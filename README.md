@@ -53,7 +53,6 @@ export default function App() {
 ```
 
 The package augments `Window` with `__PRELOADED_DATA__?: Record<string, unknown>` so you don't need to declare it. If you prefer to wire `RouteDataProvider` yourself (e.g. for testing), use `RouterService`, `RouteDataProvider`, and the same initial data logic.
-```
 
 ### 3. SSR entry (optional)
 
