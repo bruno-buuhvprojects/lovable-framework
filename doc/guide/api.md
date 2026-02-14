@@ -5,7 +5,7 @@
 | Type | Description |
 |------|-------------|
 | `RouteConfig` | `{ path: string; Component: ComponentWithGetServerData; isSSR: boolean }` |
-| `ComponentWithGetServerData` | React component type with optional `getServerData?: (params?: Record<string, string>) => Promise<Record<string, unknown>>` |
+| `ComponentWithGetServerData` | React component type with optional `getServerData?: (params?: { routeParams: Record<string, string>; searchParams: Record<string, string> }) => Promise<Record<string, unknown>>` |
 | `RouteDataState` | `Record<string, Record<string, unknown>>` (routeKey → data) |
 | `InitialRouteShape` | `{ path: string }` (minimal shape for initial route) |
 
@@ -21,7 +21,8 @@
 | Method | Description |
 |--------|-------------|
 | `RouterService.matchRoute(pathname: string)` | Returns the `RouteConfig` that matches the pathname. |
-| `RouterService.routeParams(routePath: string, pathname?: string)` | Returns params object (e.g. `/video/:id` + `/video/123` → `{ id: '123' }`). |
+| `RouterService.routeParams(routePath: string, pathname?: string)` | Returns `{ routeParams, searchParams }`; path segments (e.g. `/video/:id` + `/video/123` → `routeParams: { id: '123' }`). |
+| `RouterService.searchParams(urlOrSearch: string)` | Parses query string into `Record<string, string>`. |
 | `RouterService.isSsrRoute(pathname: string)` | Returns whether the pathname matches a route with `isSSR: true`. |
 | `RouterService.matchPath(pathPattern: string, pathname: string)` | Low-level path match. |
 
