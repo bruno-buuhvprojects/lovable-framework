@@ -99,7 +99,40 @@ You also need a **tsconfig for the server** (e.g. `tsconfig.server.json`) that c
 }
 ```
 
-## 4. Build output
+## 4. Watch and debug (optional)
+
+During development, changing files under `src/ssr` or your app (e.g. pages, entry) does not restart the server by default, so you have to restart the Node process to pick up changes. To get **auto-restart on file change** and **debugger reconnection** in VS Code/Cursor:
+
+1. **Add nodemon** (or similar) and two scripts to your app’s `package.json`:
+
+```json
+{
+  "scripts": {
+    "dev:ssr": "tsx src/ssr/server.ts",
+    "dev:ssr:watch": "nodemon --watch src/ssr --watch src/application --ext ts,tsx --exec \"tsx src/ssr/server.ts\"",
+    "dev:ssr:watch:debug": "cross-env NODE_OPTIONS=--inspect npm run dev:ssr:watch"
+  }
+}
+```
+
+Adjust `--watch` paths to match your project (e.g. `src/routes`, `src/pages`). `dev:ssr:watch:debug` runs the server with Node’s inspector so the debugger can attach.
+
+2. **Add an attach configuration** in `.vscode/launch.json`:
+
+```json
+{
+  "type": "node",
+  "request": "attach",
+  "name": "Attach to SSR (watch)",
+  "port": 9229,
+  "restart": true,
+  "skipFiles": ["<node_internals>/**"]
+}
+```
+
+3. **Use it:** run in a terminal `npm run dev:ssr:watch:debug`, then in Run and Debug start **"Attach to SSR (watch)"**. When you edit files in the watched folders, the server restarts and the debugger reconnects automatically (`restart: true`).
+
+## 5. Build output
 
 - Client build goes to `dist/` (e.g. `index.html`, `assets/`).
 - SSR build goes to `dist/ssr/entry-server.js`.

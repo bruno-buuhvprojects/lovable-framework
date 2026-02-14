@@ -105,6 +105,7 @@ Scripts:
 
 - **Dev SPA:** `vite`
 - **Dev SSR:** `tsx src/ssr/server.ts`
+- **Dev SSR with watch:** use `nodemon` to watch `src/ssr` and your app (e.g. `src/application` or `src/pages`); run with `NODE_OPTIONS=--inspect` and **Attach to Node** (port 9229, `restart: true`) so the server restarts on change and the debugger reconnects. See [SSR guide → Watch and debug](https://calm-meadow-5cf6.github-8c8.workers.dev/guide/ssr.html#_4-watch-and-debug-optional).
 - **Build SSR:** `vite build && vite build --ssr src/entry-server.tsx --outDir dist`
 - **Preview SSR:** `npm run build:ssr && NODE_ENV=production tsx src/ssr/server.ts`
 
