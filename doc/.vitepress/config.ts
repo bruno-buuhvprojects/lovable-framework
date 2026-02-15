@@ -23,7 +23,7 @@ export default defineConfig({
         text: 'SSR',
         items: [
           { text: 'SSR entry & server', link: '/guide/ssr' },
-          { text: 'getServerData', link: '/guide/get-server-data' },
+          { text: 'getData', link: '/guide/get-data' },
         ],
       },
       {

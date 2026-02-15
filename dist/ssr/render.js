@@ -6,7 +6,7 @@ import { RouteDataProvider } from '../router/RouteDataContext.js';
 import { AppRoutes } from '../components/AppRoutes.js';
 /**
  * Renders the app for a single URL. Called once per request with that request's URL.
- * getServerData is invoked only for the route that matches this URL (never for all routes).
+ * getData is invoked only for the route that matches this URL (never for all routes).
  */
 export async function render(url, options) {
     const fullUrl = new URL(url, 'http://localhost');
@@ -19,13 +19,13 @@ export async function render(url, options) {
     const searchParams = matchedRoute ? RouterService.searchParams(fullUrl.search) : {};
     params.searchParams = searchParams;
     let preloadedData = { is_success: true };
-    const getServerData = matchedRoute?.Component?.getServerData;
-    if (typeof getServerData === 'function') {
+    const getData = matchedRoute?.Component?.getData;
+    if (typeof getData === 'function') {
         try {
-            preloadedData = await getServerData(params);
+            preloadedData = await getData(params);
         }
         catch (e) {
-            console.error(`SSR getServerData failed for ${matchedRoute?.path}:`, e);
+            console.error(`SSR getData failed for ${matchedRoute?.path}:`, e);
             preloadedData = { ...preloadedData, is_success: false };
         }
     }

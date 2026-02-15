@@ -34,7 +34,7 @@ export async function render(url: string): Promise<RenderResult> {
 }
 ```
 
-The framework’s `render(url, options)` resolves the route, runs `getServerData` when present, and renders `StaticRouter` + `RouteDataProvider` + `AppRoutes`. Your `wrap` adds the rest of the tree (providers, toasts, etc.).
+The framework’s `render(url, options)` resolves the route, runs `getData` when present, and renders `StaticRouter` + `RouteDataProvider` + `AppRoutes`. Your `wrap` adds the rest of the tree (providers, toasts, etc.).
 
 ## 2. Server script
 

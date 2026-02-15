@@ -8,7 +8,7 @@
     "vite",
     "express",
     "lovable",
-    "getServerData",
+    "getData",
     "route-registry",
     "server-side-rendering"
   ],

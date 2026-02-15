@@ -27,7 +27,7 @@ export default function App() {
   Reads `window.__PRELOADED_DATA__` and `window.location.pathname`, uses `RouterService` to get the matched route and params, and wraps children in `RouteDataProvider` with that initial data. You don’t need to declare `Window` or compute initial route/params yourself.
 
 - **AppRoutes**  
-  Renders React Router `<Routes>` from the registered routes. For the current location it gets data from the route data context (from SSR or from a client `getServerData` call) and renders the matching page component with that data.
+  Renders React Router `<Routes>` from the registered routes. For the current location it gets data from the route data context (from SSR or from a client `getData` call) and renders the matching page component with that data.
 
 ## Manual wiring (optional)
 

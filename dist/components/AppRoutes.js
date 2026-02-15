@@ -17,23 +17,23 @@ export function AppRoutes() {
     const routeKey = matchedRoute ? buildRouteKey(matchedRoute.path, params.routeParams, params.searchParams) : '';
     const { data, setData } = useRouteData();
     const currentData = routeKey ? data[routeKey] : undefined;
-    const getServerData = matchedRoute?.Component?.getServerData;
+    const getData = matchedRoute?.Component?.getData;
     useEffect(() => {
-        if (!routeKey || !getServerData || currentData !== undefined)
+        if (!routeKey || !getData || currentData !== undefined)
             return;
-        getServerData(params)
+        getData(params)
             .then((d) => setData(routeKey, d))
             .catch((e) => {
-            console.error('Client getServerData failed:', e);
+            console.error('Client getData failed:', e);
             setData(routeKey, {});
         });
-    }, [routeKey, getServerData, params, currentData, setData]);
+    }, [routeKey, getData, params, currentData, setData]);
     return (_jsx(Routes, { children: routes.map((route) => {
             const isMatched = matchedRoute === route;
-            const getServerDataForRoute = route.Component.getServerData;
+            const getDataForRoute = route.Component.getData;
             let element;
             if (isMatched) {
-                if (typeof getServerDataForRoute === 'function') {
+                if (typeof getDataForRoute === 'function') {
                     element =
                         currentData !== undefined ? (_jsx(route.Component, { ...currentData })) : null;
                 }

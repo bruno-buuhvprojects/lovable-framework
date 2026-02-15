@@ -1,6 +1,6 @@
-# getServerData
+# getData
 
-Pages that need data before render can attach a `getServerData` function to the route component. It runs:
+Pages that need data before render can attach a `getData` function to the route component. It runs:
 
 - **On the server** when the request hits an SSR route (the result is serialized into `__PRELOADED_DATA__`).
 - **On the client** when the user navigates to that route (e.g. via `useNavigate`) and the data for that route/params is not yet in the context.
@@ -9,7 +9,7 @@ Data is keyed by path + params, so revisiting the same URL reuses cached data.
 
 ## Parameters
 
-`getServerData` receives a single argument **`params`** with this shape:
+`getData` receives a single argument **`params`** with this shape:
 
 ```ts
 {
@@ -39,12 +39,12 @@ const VideoPage = ({ video, relatedVideos }: VideoPageProps) => {
   );
 };
 
-type GetServerDataParams = {
+type GetDataParams = {
   routeParams: Record<string, string>;
   searchParams: Record<string, string>;
 };
 
-async function getServerData(params?: GetServerDataParams) {
+async function getData(params?: GetDataParams) {
   const id = params?.routeParams?.id;
   const [videoRes, relatedRes] = await Promise.all([
     fetch(`/api/videos/${id}`).then((r) => r.json()),
@@ -56,7 +56,7 @@ async function getServerData(params?: GetServerDataParams) {
   };
 }
 
-VideoPage.getServerData = getServerData;
+VideoPage.getData = getData;
 export default VideoPage;
 ```
 
@@ -66,12 +66,12 @@ The route would be:
 { path: '/video/:id', Component: VideoPage, isSSR: true }
 ```
 
-Then `params.routeParams` in `getServerData` will have `{ id: '...' }` from the path; `params.searchParams` will have the query string keys and values.
+Then `params.routeParams` in `getData` will have `{ id: '...' }` from the path; `params.searchParams` will have the query string keys and values.
 
 ## Rules
 
-- The return value of `getServerData` is passed as props to the page component.
-- **`params.routeParams`** comes from the path (e.g. `:id` → `params.routeParams.id`). For the initial SSR request it’s from the requested URL; on client navigation it’s from the current location.
+- The return value of `getData` is passed as props to the page component.
+- **`params.routeParams`** comes from the path (e.g. `:id` → `params.routeParams.id`). For the initial SSR request it's from the requested URL; on client navigation it's from the current location.
 - **`params.searchParams`** comes from the URL query string (e.g. `?tab=info` → `params.searchParams.tab`).
-- If `getServerData` throws on the server, the framework logs and sets `preloadedData.is_success = false`; you can handle that in the page if needed.
-- Pages without `getServerData` render with no props from the framework (client-only or static).
+- If `getData` throws on the server, the framework logs and sets `preloadedData.is_success = false`; you can handle that in the page if needed.
+- Pages without `getData` render with no props from the framework (client-only or static).

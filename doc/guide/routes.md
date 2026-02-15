@@ -9,13 +9,13 @@ Import the types from the framework and define your route list:
 import {
   registerRoutes,
   type RouteConfig,
-  type ComponentWithGetServerData,
+  type ComponentWithGetData,
 } from 'lovable-ssr';
 import HomePage from '@/pages/HomePage';
 import VideoPage from '@/pages/VideoPage';
 import NotFound from '@/pages/NotFound';
 
-export type { RouteConfig, ComponentWithGetServerData };
+export type { RouteConfig, ComponentWithGetData };
 
 export const routes: RouteConfig[] = [
   { path: '/', Component: HomePage, isSSR: true },
@@ -32,7 +32,7 @@ registerRoutes(routes);
 | Field       | Type     | Description                                      |
 | ----------- | -------- | ------------------------------------------------ |
 | `path`      | `string` | Path pattern (e.g. `/`, `/video/:id`, `*`)       |
-| `Component` | `React.ComponentType` | Page component (may have `getServerData`) |
+| `Component` | `React.ComponentType` | Page component (may have `getData`) |
 | `isSSR`     | `boolean`| If `true`, the server will run SSR for this path |
 
 ## Register once
