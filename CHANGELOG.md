@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.17](https://github.com/bruno-buuhvprojects/lovable-ssr/compare/v0.1.16...v0.1.17) (2026-02-17)
+
+
+### Bug Fixes
+
+* types ([df73184](https://github.com/bruno-buuhvprojects/lovable-ssr/commit/df73184155b2d67b6d519be882489c1c74813f5e))
+
 ### [0.1.16](https://github.com/bruno-buuhvprojects/lovable-ssr/compare/v0.1.15...v0.1.16) (2026-02-17)
 
 
