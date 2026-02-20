@@ -6,8 +6,22 @@ function matchPath(pathPattern: string, pathname: string): boolean {
   if (pathPattern === pathname) return true;
   const segments = pathname.split('/').filter(Boolean);
   const patternSegments = pathPattern.split('/').filter(Boolean);
-  if (segments.length !== patternSegments.length) return false;
-  return patternSegments.every((p, i) => p.startsWith(':') || p === segments[i]);
+  let pathIndex = 0;
+  for (let i = 0; i < patternSegments.length; i++) {
+    const p = patternSegments[i];
+    if (p === '*') {
+      // * matches any remaining segments (0 or more) — e.g. studio/* matches studio/profile/teste/1
+      return true;
+    }
+    if (pathIndex >= segments.length) return false;
+    if (p.startsWith(':')) {
+      pathIndex++;
+      continue;
+    }
+    if (p !== segments[pathIndex]) return false;
+    pathIndex++;
+  }
+  return pathIndex === segments.length;
 }
 
 function isSsrRoute(pathname: string): boolean {
