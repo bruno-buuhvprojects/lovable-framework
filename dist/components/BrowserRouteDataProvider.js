@@ -1,7 +1,8 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import { HelmetProvider } from 'react-helmet-async';
+import ReactHelmetAsync from 'react-helmet-async';
 import RouterService from '../router/RouterService.js';
 import { RouteDataProvider } from '../router/RouteDataContext.js';
+const { HelmetProvider } = ReactHelmetAsync;
 /**
  * Wraps children with HelmetProvider and RouteDataProvider using initial data from the browser:
  * - window.__PRELOADED_DATA__ (from SSR)

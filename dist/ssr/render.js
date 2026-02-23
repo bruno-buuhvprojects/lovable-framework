@@ -1,7 +1,8 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { renderToString } from 'react-dom/server';
-import { HelmetProvider } from 'react-helmet-async';
+import ReactHelmetAsync from 'react-helmet-async';
 import { StaticRouter } from 'react-router-dom/server';
+const { HelmetProvider } = ReactHelmetAsync;
 import { AppRoutes } from '../components/AppRoutes.js';
 import { RouteDataProvider } from '../router/RouteDataContext.js';
 import RouterService from '../router/RouterService.js';

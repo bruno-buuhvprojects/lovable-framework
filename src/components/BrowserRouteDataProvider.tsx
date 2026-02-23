@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
-import { HelmetProvider } from 'react-helmet-async';
+import ReactHelmetAsync from 'react-helmet-async';
 import RouterService from '../router/RouterService.js';
 import { RouteDataProvider } from '../router/RouteDataContext.js';
+
+const { HelmetProvider } = ReactHelmetAsync;
 
 /**
  * Wraps children with HelmetProvider and RouteDataProvider using initial data from the browser:

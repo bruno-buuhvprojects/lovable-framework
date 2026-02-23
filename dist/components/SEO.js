@@ -1,5 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { Helmet } from 'react-helmet-async';
+import ReactHelmetAsync from 'react-helmet-async';
+const { Helmet } = ReactHelmetAsync;
 /**
  * Centralized SEO component for meta tags and JSON-LD.
  * Use within HelmetProvider (provided by framework at app level).
