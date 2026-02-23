@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
 import { renderToString } from 'react-dom/server';
-import ReactHelmetAsync from 'react-helmet-async';
 import { StaticRouter } from 'react-router-dom/server';
-import type { HelmetServerState } from 'react-helmet-async';
-
-const { HelmetProvider } = ReactHelmetAsync;
+import { SEOProvider } from '../components/SEOContext.js';
+import type { SEOProps } from '../components/SEOContext.js';
+import { buildHeadHtmlFromSEO } from './buildHeadHtml.js';
 import { AppRoutes } from '../components/AppRoutes.js';
 import { RouteDataProvider } from '../router/RouteDataContext.js';
 import RouterService from '../router/RouterService.js';
@@ -54,9 +53,9 @@ export async function render(url: string, options?: RenderOptions): Promise<Rend
     }
   }
 
-  const helmetContext: { helmet?: HelmetServerState } = {};
+  const seoCapture: { current: SEOProps | null } = { current: null };
   const inner = (
-    <HelmetProvider context={helmetContext}>
+    <SEOProvider captureRef={seoCapture}>
       <StaticRouter location={url}>
         <RouteDataProvider
           initialData={preloadedData}
@@ -66,19 +65,14 @@ export async function render(url: string, options?: RenderOptions): Promise<Rend
           <AppRoutes />
         </RouteDataProvider>
       </StaticRouter>
-    </HelmetProvider>
+    </SEOProvider>
   );
 
   const app = options?.wrap ? options.wrap(inner) : inner;
   const html = renderToString(app);
 
-  const helmet = helmetContext.helmet
-    ? {
-        title: helmetContext.helmet.title.toString(),
-        meta: helmetContext.helmet.meta.toString(),
-        link: helmetContext.helmet.link.toString(),
-        script: helmetContext.helmet.script.toString(),
-      }
+  const helmet = seoCapture.current
+    ? buildHeadHtmlFromSEO(seoCapture.current)
     : undefined;
 
   return { html, preloadedData, helmet };

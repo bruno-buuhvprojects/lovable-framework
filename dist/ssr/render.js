@@ -1,8 +1,8 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { renderToString } from 'react-dom/server';
-import ReactHelmetAsync from 'react-helmet-async';
 import { StaticRouter } from 'react-router-dom/server';
-const { HelmetProvider } = ReactHelmetAsync;
+import { SEOProvider } from '../components/SEOContext.js';
+import { buildHeadHtmlFromSEO } from './buildHeadHtml.js';
 import { AppRoutes } from '../components/AppRoutes.js';
 import { RouteDataProvider } from '../router/RouteDataContext.js';
 import RouterService from '../router/RouterService.js';
@@ -34,17 +34,12 @@ export async function render(url, options) {
             preloadedData = { ...preloadedData, is_success: false };
         }
     }
-    const helmetContext = {};
-    const inner = (_jsx(HelmetProvider, { context: helmetContext, children: _jsx(StaticRouter, { location: url, children: _jsx(RouteDataProvider, { initialData: preloadedData, initialRoute: matchedRoute, initialParams: params, children: _jsx(AppRoutes, {}) }) }) }));
+    const seoCapture = { current: null };
+    const inner = (_jsx(SEOProvider, { captureRef: seoCapture, children: _jsx(StaticRouter, { location: url, children: _jsx(RouteDataProvider, { initialData: preloadedData, initialRoute: matchedRoute, initialParams: params, children: _jsx(AppRoutes, {}) }) }) }));
     const app = options?.wrap ? options.wrap(inner) : inner;
     const html = renderToString(app);
-    const helmet = helmetContext.helmet
-        ? {
-            title: helmetContext.helmet.title.toString(),
-            meta: helmetContext.helmet.meta.toString(),
-            link: helmetContext.helmet.link.toString(),
-            script: helmetContext.helmet.script.toString(),
-        }
+    const helmet = seoCapture.current
+        ? buildHeadHtmlFromSEO(seoCapture.current)
         : undefined;
     return { html, preloadedData, helmet };
 }

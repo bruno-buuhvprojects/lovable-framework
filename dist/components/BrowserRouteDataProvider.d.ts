@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 /**
- * Wraps children with HelmetProvider and RouteDataProvider using initial data from the browser:
+ * Wraps children with SEOProvider and RouteDataProvider using initial data from the browser:
  * - window.__PRELOADED_DATA__ (from SSR)
  * - window.location.pathname + RouterService for matchedRoute and routeParams
  *

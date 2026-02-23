@@ -39,14 +39,14 @@
 | Component | Description |
 |-----------|-------------|
 | `AppRoutes` | Renders `<Routes>` from the registry; uses context for page data. Use inside `RouteDataProvider` (or `BrowserRouteDataProvider`). |
-| `BrowserRouteDataProvider` | Reads `window.__PRELOADED_DATA__` and pathname, wraps children in `HelmetProvider` + `RouteDataProvider`. Use inside `BrowserRouter`. |
+| `BrowserRouteDataProvider` | Reads `window.__PRELOADED_DATA__` and pathname, wraps children in `SEOProvider` + `RouteDataProvider`. Use inside `BrowserRouter`. |
 | `SEO` | Sets meta tags and optional JSON-LD for a page. Props: `title`, `description`, `image?`, `url?`, `type?`, `noindex?`, `structuredData?`. See [SEO guide](/guide/seo). |
 
 ## SSR (main package)
 
 | Export | Description |
 |--------|-------------|
-| `render(url: string, options?: RenderOptions)` | Returns `Promise<{ html: string; preloadedData; helmet? }>`. `options.wrap` can wrap the inner tree (e.g. QueryClient, Toaster). `options.requestContext` is forwarded to `getData` via `params.request`. When pages use `<SEO />`, `helmet` contains title, meta, link, and script tags for server injection. |
+| `render(url: string, options?: RenderOptions)` | Returns `Promise<{ html: string; preloadedData; helmet? }>`. `options.wrap` can wrap the inner tree (e.g. QueryClient, Toaster). `options.requestContext` is forwarded to `getData` via `params.request`. When pages use `<SEO />`, `helmet` contains title, meta, link, and script tags for server injection (built from SEO props, no external lib). |
 
 ## Server (lovable-ssr/server)
 

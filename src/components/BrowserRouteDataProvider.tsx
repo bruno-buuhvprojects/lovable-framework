@@ -1,12 +1,10 @@
 import type { ReactNode } from 'react';
-import ReactHelmetAsync from 'react-helmet-async';
 import RouterService from '../router/RouterService.js';
 import { RouteDataProvider } from '../router/RouteDataContext.js';
-
-const { HelmetProvider } = ReactHelmetAsync;
+import { SEOProvider } from './SEOContext.js';
 
 /**
- * Wraps children with HelmetProvider and RouteDataProvider using initial data from the browser:
+ * Wraps children with SEOProvider and RouteDataProvider using initial data from the browser:
  * - window.__PRELOADED_DATA__ (from SSR)
  * - window.location.pathname + RouterService for matchedRoute and routeParams
  *
@@ -31,7 +29,7 @@ export function BrowserRouteDataProvider({ children }: { children: ReactNode }) 
   };
 
   return (
-    <HelmetProvider>
+    <SEOProvider>
       <RouteDataProvider
         initialData={preloadedData}
         initialRoute={matchedRoute}
@@ -39,6 +37,6 @@ export function BrowserRouteDataProvider({ children }: { children: ReactNode }) 
       >
         {children}
       </RouteDataProvider>
-    </HelmetProvider>
+    </SEOProvider>
   );
 }

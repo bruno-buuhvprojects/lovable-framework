@@ -1,15 +1,9 @@
-export interface SEOProps {
-    title: string;
-    description: string;
-    image?: string;
-    url?: string;
-    type?: string;
-    noindex?: boolean;
-    structuredData?: object;
-}
+import { type SEOProps } from './SEOContext.js';
+export type { SEOProps };
 /**
- * Centralized SEO component for meta tags and JSON-LD.
- * Use within HelmetProvider (provided by framework at app level).
+ * Centralized SEO: meta tags and JSON-LD.
+ * SSR: reports to context for head injection.
+ * Client: updates document.title and meta via useEffect.
  */
-export declare function SEO({ title, description, image, url, type, noindex, structuredData, }: SEOProps): import("react/jsx-runtime").JSX.Element;
+export declare function SEO(props: SEOProps): null;
 //# sourceMappingURL=SEO.d.ts.map

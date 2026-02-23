@@ -1,50 +1,118 @@
-import ReactHelmetAsync from 'react-helmet-async';
+import { useEffect } from 'react';
+import { useSEOContext, type SEOProps } from './SEOContext.js';
 
-const { Helmet } = ReactHelmetAsync;
+export type { SEOProps };
 
-export interface SEOProps {
-  title: string;
-  description: string;
-  image?: string;
-  url?: string;
-  type?: string;
-  noindex?: boolean;
-  structuredData?: object;
+function upsertMeta(
+  doc: Document,
+  selector: string,
+  attrs: Record<string, string>
+) {
+  let el = doc.querySelector(selector);
+  if (!el) {
+    el = doc.createElement('meta');
+    doc.head.appendChild(el);
+  }
+  Object.entries(attrs).forEach(([k, v]) => el!.setAttribute(k, v));
+}
+
+function applySEODOM(props: SEOProps) {
+  if (typeof document === 'undefined') return;
+  document.title = props.title;
+
+  upsertMeta(document, 'meta[name="description"]', {
+    name: 'description',
+    content: props.description,
+  });
+  if (props.noindex) {
+    upsertMeta(document, 'meta[name="robots"]', {
+      name: 'robots',
+      content: 'noindex, nofollow',
+    });
+  }
+  if (props.url) {
+    let canon = document.querySelector('link[rel="canonical"]');
+    if (!canon) {
+      canon = document.createElement('link');
+      canon.setAttribute('rel', 'canonical');
+      document.head.appendChild(canon);
+    }
+    canon.setAttribute('href', props.url);
+  }
+  upsertMeta(document, 'meta[property="og:title"]', {
+    property: 'og:title',
+    content: props.title,
+  });
+  upsertMeta(document, 'meta[property="og:description"]', {
+    property: 'og:description',
+    content: props.description,
+  });
+  upsertMeta(document, 'meta[property="og:type"]', {
+    property: 'og:type',
+    content: props.type ?? 'website',
+  });
+  if (props.url) {
+    upsertMeta(document, 'meta[property="og:url"]', {
+      property: 'og:url',
+      content: props.url,
+    });
+  }
+  if (props.image) {
+    upsertMeta(document, 'meta[property="og:image"]', {
+      property: 'og:image',
+      content: props.image,
+    });
+  }
+  upsertMeta(document, 'meta[name="twitter:card"]', {
+    name: 'twitter:card',
+    content: 'summary_large_image',
+  });
+  upsertMeta(document, 'meta[name="twitter:title"]', {
+    name: 'twitter:title',
+    content: props.title,
+  });
+  upsertMeta(document, 'meta[name="twitter:description"]', {
+    name: 'twitter:description',
+    content: props.description,
+  });
+  if (props.image) {
+    upsertMeta(document, 'meta[name="twitter:image"]', {
+      name: 'twitter:image',
+      content: props.image,
+    });
+  }
+  if (props.structuredData) {
+    let script = document.querySelector('script[data-seo-jsonld]');
+    if (!script) {
+      script = document.createElement('script');
+      script.setAttribute('type', 'application/ld+json');
+      script.setAttribute('data-seo-jsonld', '');
+      document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(props.structuredData);
+  }
 }
 
 /**
- * Centralized SEO component for meta tags and JSON-LD.
- * Use within HelmetProvider (provided by framework at app level).
+ * Centralized SEO: meta tags and JSON-LD.
+ * SSR: reports to context for head injection.
+ * Client: updates document.title and meta via useEffect.
  */
-export function SEO({
-  title,
-  description,
-  image,
-  url,
-  type = 'website',
-  noindex = false,
-  structuredData,
-}: SEOProps) {
-  return (
-    <Helmet>
-      <title>{title}</title>
-      <meta name="description" content={description} />
-      {noindex && <meta name="robots" content="noindex, nofollow" />}
-      {url && <link rel="canonical" href={url} />}
-      {url && <meta property="og:url" content={url} />}
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
-      <meta property="og:type" content={type} />
-      {image && <meta property="og:image" content={image} />}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
-      {image && <meta name="twitter:image" content={image} />}
-      {structuredData && (
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-      )}
-    </Helmet>
-  );
+export function SEO(props: SEOProps) {
+  const ctx = useSEOContext();
+  if (ctx) ctx.setMeta(props);
+
+  useEffect(() => {
+    applySEODOM(props);
+  }, [
+    props.title,
+    props.description,
+    props.image,
+    props.url,
+    props.type,
+    props.noindex,
+    props.structuredData ? JSON.stringify(props.structuredData) : null,
+  ]);
+
+  return null;
 }

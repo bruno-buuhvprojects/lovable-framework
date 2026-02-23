@@ -4,8 +4,8 @@ The framework provides a central `SEO` component powered by `react-helmet-async`
 
 ## Requirements
 
-- `BrowserRouteDataProvider` wraps your app with `HelmetProvider` (included by default).
-- For SSR, the framework's `render` wraps the tree with `HelmetProvider` and returns helmet data; the server injects it before `</head>`.
+- `BrowserRouteDataProvider` wraps your app with `SEOProvider` (included by default).
+- For SSR, the framework's `render` wraps the tree with `SEOProvider`, captures SEO props from `<SEO />`, and injects the head tags before `</head>`. No external dependencies.
 
 ## Usage
 
