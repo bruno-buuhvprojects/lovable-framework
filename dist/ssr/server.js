@@ -3,6 +3,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
+import { getRoutes } from '../registry.js';
 import RouterService from '../router/RouterService.js';
 function defaultDistEntryPath(entryPath) {
     return entryPath
@@ -30,6 +31,8 @@ class SsrServer {
             entryPath: config.entryPath,
             port: config.port ?? 5173,
             cssLinkInDev: config.cssLinkInDev ?? '<link rel="stylesheet" href="/src/index.css"></head>',
+            extraRoutes: config.extraRoutes ?? (() => { }),
+            sitemap: config.sitemap ?? undefined,
         };
         this.isProd = process.env.NODE_ENV === 'production';
         this.app = express();
@@ -65,7 +68,73 @@ class SsrServer {
         this.app.use(express.static(path.join(this.config.root, 'dist'), { index: false }));
     }
     configureRequestHandler() {
+        if (this.config.sitemap?.siteUrl) {
+            this.registerSitemapRoutes(this.config.sitemap.siteUrl);
+        }
+        this.config.extraRoutes?.(this.app);
         this.app.use('*', (req, res, next) => this.handleRequest(req, res, next));
+    }
+    registerSitemapRoutes(siteUrl) {
+        const baseUrl = siteUrl.replace(/\/$/, '');
+        this.app.get('/robots.txt', (_req, res) => {
+            res.type('text/plain');
+            res.send(`User-agent: *
+Allow: /
+
+Sitemap: ${baseUrl}/sitemap.xml`);
+        });
+        this.app.get('/sitemap.xml', async (_req, res) => {
+            const today = new Date().toISOString().split('T')[0];
+            const entries = [];
+            for (const route of getRoutes()) {
+                const cfg = route.sitemap;
+                if (!cfg?.include)
+                    continue;
+                const changefreq = cfg.changefreq ?? 'weekly';
+                const priority = cfg.priority ?? 0.5;
+                if (cfg.getEntries) {
+                    try {
+                        const dynamicEntries = await cfg.getEntries({ siteUrl: baseUrl });
+                        for (const e of dynamicEntries) {
+                            entries.push({
+                                loc: e.loc,
+                                lastmod: e.lastmod ?? today,
+                                changefreq: e.changefreq ?? changefreq,
+                                priority: e.priority ?? priority,
+                            });
+                        }
+                    }
+                    catch (err) {
+                        console.error(`[lovable-ssr] sitemap getEntries failed for ${route.path}:`, err);
+                    }
+                }
+                else if (!route.path.includes(':')) {
+                    entries.push({
+                        loc: `${baseUrl}${route.path === '/' ? '' : route.path}`,
+                        lastmod: today,
+                        changefreq,
+                        priority,
+                    });
+                }
+            }
+            const xml = this.buildSitemapXml(entries);
+            res.type('application/xml').send(xml);
+        });
+    }
+    buildSitemapXml(entries) {
+        const lines = entries.map((e) => `  <url><loc>${this.escapeXml(e.loc)}</loc><lastmod>${e.lastmod ?? ''}</lastmod><changefreq>${e.changefreq ?? 'weekly'}</changefreq><priority>${e.priority ?? 0.5}</priority></url>`);
+        return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${lines.join('\n')}
+</urlset>`;
+    }
+    escapeXml(str) {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&apos;');
     }
     async handleRequest(req, res, next) {
         const url = req.originalUrl;
@@ -100,6 +169,7 @@ class SsrServer {
         }
         let appHtml;
         let preloadedData;
+        let helmet;
         // Constrói um contexto simples de request (cookies raw + headers) para o getData.
         const cookiesRaw = req.headers.cookie ?? '';
         const cookies = {};
@@ -131,26 +201,31 @@ class SsrServer {
                 if (cached) {
                     appHtml = cached.html;
                     preloadedData = cached.preloadedData;
+                    helmet = cached.helmet;
                 }
                 else {
                     const result = await render(url, { requestContext });
                     appHtml = typeof result.html === 'string' ? result.html : '';
                     preloadedData = result.preloadedData ?? {};
-                    this._ssrCache.set(cacheKey, { html: appHtml, preloadedData });
+                    helmet = result.helmet;
+                    this._ssrCache.set(cacheKey, { html: appHtml, preloadedData, helmet });
                 }
             }
             else {
                 const result = await render(url, { requestContext });
                 appHtml = typeof result.html === 'string' ? result.html : '';
                 preloadedData = result.preloadedData ?? {};
+                helmet = result.helmet;
             }
         }
         else {
             const result = await render(url, { requestContext });
             appHtml = typeof result.html === 'string' ? result.html : '';
             preloadedData = result.preloadedData ?? {};
+            helmet = result.helmet;
         }
         let html = template.replace('<div id="root"></div>', `<div id="root">${appHtml}</div>`);
+        html = this.injectHelmet(html, helmet);
         html = this.injectPreloadedData(html, preloadedData);
         if (this.vite) {
             const transformed = await this.vite.transformIndexHtml(url, html);
@@ -185,6 +260,14 @@ class SsrServer {
         if (!this.vite)
             return html;
         return html.replace('</head>', this.config.cssLinkInDev);
+    }
+    injectHelmet(html, helmet) {
+        if (!helmet)
+            return html;
+        const tags = [helmet.title, helmet.meta, helmet.link, helmet.script].filter(Boolean).join('\n');
+        if (!tags)
+            return html;
+        return html.replace('</head>', `${tags}\n</head>`);
     }
     injectPreloadedData(html, preloadedData) {
         if (Object.keys(preloadedData).length === 0)

@@ -5,6 +5,7 @@ SSR and route data engine for [Lovable](https://lovable.dev) projects.
 - **Route registry** — register routes once; the framework matches paths and runs `getData` on the server and on SPA navigation.
 - **Single React tree** — same providers and components for SSR and client; data is keyed by route + params and reused.
 - **Express + Vite server** — dev with Vite middleware, production with static `dist/` and the SSR bundle.
+- **SEO** — `SEO` component for meta tags and JSON-LD; helmet content is injected into the HTML head during SSR.
 
 ## Quick links
 
@@ -13,6 +14,7 @@ SSR and route data engine for [Lovable](https://lovable.dev) projects.
 - [App shell](/guide/app-shell) — `BrowserRouteDataProvider` and `AppRoutes`
 - [SSR](/guide/ssr) — entry-server and server setup
 - [getData](/guide/get-data) — loading data per route
+- [SEO](/guide/seo) — meta tags, Open Graph, JSON-LD
 - [API](/guide/api) — types, router, context, server config
 
 ## Minimal setup

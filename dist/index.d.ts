@@ -1,7 +1,8 @@
 import './globals.js';
-export type { RouteConfig, ComponentWithGetData, RouteDataParams } from './types.js';
+export type { RouteConfig, ComponentWithGetData, RouteDataParams, SitemapEntry, SitemapRouteConfig, SitemapChangefreq, } from './types.js';
 export { registerRoutes, getRoutes } from './registry.js';
 export { BrowserRouteDataProvider } from './components/BrowserRouteDataProvider.js';
+export { SEO, type SEOProps } from './components/SEO.js';
 export { default as RouterService } from './router/RouterService.js';
 export { RouteDataProvider, useRouteData, buildRouteKey, type RouteDataState, type InitialRouteShape, } from './router/RouteDataContext.js';
 export { AppRoutes } from './components/AppRoutes.js';

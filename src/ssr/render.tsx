@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { renderToString } from 'react-dom/server';
+import { HelmetProvider, type HelmetServerState } from 'react-helmet-async';
 import { StaticRouter } from 'react-router-dom/server';
 import { AppRoutes } from '../components/AppRoutes.js';
 import { RouteDataProvider } from '../router/RouteDataContext.js';
@@ -9,6 +10,7 @@ import { RequestContext, RouteDataParams } from '../types.js';
 export interface RenderResult {
   html: string;
   preloadedData: Record<string, unknown>;
+  helmet?: { title: string; meta: string; link: string; script: string };
 }
 
 export interface RenderOptions {
@@ -49,19 +51,32 @@ export async function render(url: string, options?: RenderOptions): Promise<Rend
     }
   }
 
+  const helmetContext: { helmet?: HelmetServerState } = {};
   const inner = (
-    <StaticRouter location={url}>
-      <RouteDataProvider
-        initialData={preloadedData}
-        initialRoute={matchedRoute}
-        initialParams={params}
-      >
-        <AppRoutes />
-      </RouteDataProvider>
-    </StaticRouter>
+    <HelmetProvider context={helmetContext}>
+      <StaticRouter location={url}>
+        <RouteDataProvider
+          initialData={preloadedData}
+          initialRoute={matchedRoute}
+          initialParams={params}
+        >
+          <AppRoutes />
+        </RouteDataProvider>
+      </StaticRouter>
+    </HelmetProvider>
   );
 
   const app = options?.wrap ? options.wrap(inner) : inner;
   const html = renderToString(app);
-  return { html, preloadedData };
+
+  const helmet = helmetContext.helmet
+    ? {
+        title: helmetContext.helmet.title.toString(),
+        meta: helmetContext.helmet.meta.toString(),
+        link: helmetContext.helmet.link.toString(),
+        script: helmetContext.helmet.script.toString(),
+      }
+    : undefined;
+
+  return { html, preloadedData, helmet };
 }

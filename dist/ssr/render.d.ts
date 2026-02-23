@@ -3,6 +3,12 @@ import { RequestContext } from '../types.js';
 export interface RenderResult {
     html: string;
     preloadedData: Record<string, unknown>;
+    helmet?: {
+        title: string;
+        meta: string;
+        link: string;
+        script: string;
+    };
 }
 export interface RenderOptions {
     wrap?: (children: ReactNode) => ReactNode;

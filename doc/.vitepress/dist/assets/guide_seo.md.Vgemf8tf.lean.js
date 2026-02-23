@@ -1,0 +1,1 @@
+import{_ as i,o as a,c as t,ae as n}from"./chunks/framework.Dn7Y7LSn.js";const o=JSON.parse('{"title":"SEO","description":"","frontmatter":{},"headers":[],"relativePath":"guide/seo.md","filePath":"guide/seo.md"}'),e={name:"guide/seo.md"};function h(l,s,p,k,d,E){return a(),t("div",null,[...s[0]||(s[0]=[n("",21)])])}const g=i(e,[["render",h]]);export{o as __pageData,g as default};

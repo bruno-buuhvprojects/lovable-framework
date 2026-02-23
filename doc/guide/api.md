@@ -4,7 +4,7 @@
 
 | Type | Description |
 |------|-------------|
-| `RouteConfig` | `{ path: string; Component: ComponentWithGetData; isSSR: boolean }` |
+| `RouteConfig` | `{ path: string; Component: ComponentWithGetData; isSSR: boolean; sitemap?: SitemapRouteConfig }` |
 | `ComponentWithGetData` | React component type with optional `getData?: (params?: { routeParams: Record<string, string>; searchParams: Record<string, string>; request?: unknown }) => Promise<Record<string, unknown>>` |
 | `RouteDataState` | `Record<string, Record<string, unknown>>` (routeKey → data) |
 | `InitialRouteShape` | `{ path: string }` (minimal shape for initial route) |
@@ -39,13 +39,14 @@
 | Component | Description |
 |-----------|-------------|
 | `AppRoutes` | Renders `<Routes>` from the registry; uses context for page data. Use inside `RouteDataProvider` (or `BrowserRouteDataProvider`). |
-| `BrowserRouteDataProvider` | Reads `window.__PRELOADED_DATA__` and pathname, wraps children in `RouteDataProvider`. Use inside `BrowserRouter`. |
+| `BrowserRouteDataProvider` | Reads `window.__PRELOADED_DATA__` and pathname, wraps children in `HelmetProvider` + `RouteDataProvider`. Use inside `BrowserRouter`. |
+| `SEO` | Sets meta tags and optional JSON-LD for a page. Props: `title`, `description`, `image?`, `url?`, `type?`, `noindex?`, `structuredData?`. See [SEO guide](/guide/seo). |
 
 ## SSR (main package)
 
 | Export | Description |
 |--------|-------------|
-| `render(url: string, options?: RenderOptions)` | Returns `Promise<{ html: string; preloadedData }>`. `options.wrap` can wrap the inner tree (e.g. QueryClient, Toaster). `options.requestContext` is forwarded to `getData` via `params.request`. |
+| `render(url: string, options?: RenderOptions)` | Returns `Promise<{ html: string; preloadedData; helmet? }>`. `options.wrap` can wrap the inner tree (e.g. QueryClient, Toaster). `options.requestContext` is forwarded to `getData` via `params.request`. When pages use `<SEO />`, `helmet` contains title, meta, link, and script tags for server injection. |
 
 ## Server (lovable-ssr/server)
 
@@ -64,5 +65,7 @@ Import from `lovable-ssr/server` so Node/Express are not bundled in the client.
 | `entryPath` | `string` | Path to the app’s entry-server module relative to `root` (e.g. `src/ssr/entry-server.tsx`). |
 | `port` | `number?` | Default port (default `5173`). |
 | `cssLinkInDev` | `string?` | HTML snippet to inject before `</head>` in dev (e.g. link to `/src/index.css`). |
+| `extraRoutes` | `(app: Express) => void` | Optional. Called before the SSR catch-all; use for custom routes. |
+| `sitemap` | `{ siteUrl: string }` | Optional. Enables `/sitemap.xml` and `/robots.txt` built from routes with `sitemap.include`. |
 
 Production entry path is derived from `entryPath` by replacing `src/` with `dist/` and the extension with `.js` (e.g. `dist/ssr/entry-server.js`).

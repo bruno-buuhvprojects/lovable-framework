@@ -3,12 +3,15 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import express, { type Express, type NextFunction, type Request, type Response } from 'express';
 import { createServer as createViteServer, type ViteDevServer } from 'vite';
+import { getRoutes } from '../registry.js';
 import RouterService from '../router/RouterService.js';
-import { RequestContext } from '../types.js';
+import type { RequestContext } from '../types.js';
+import type { SitemapEntry } from '../types.js';
 
 export interface RenderResult {
   html: string;
   preloadedData: Record<string, unknown>;
+  helmet?: { title: string; meta: string; link: string; script: string };
 }
 
 export interface CreateServerConfig {
@@ -18,6 +21,10 @@ export interface CreateServerConfig {
   port?: number;
   /** Optional link tag to inject in dev for CSS (e.g. '<link rel="stylesheet" href="/src/index.css">') */
   cssLinkInDev?: string;
+  /** Register routes before the SSR catch-all (e.g. sitemap.xml, robots.txt) */
+  extraRoutes?: (app: Express) => void;
+  /** Enable sitemap.xml and robots.txt from route registry. Routes with sitemap.include are included. */
+  sitemap?: { siteUrl: string };
 }
 
 function defaultDistEntryPath(entryPath: string): string {
@@ -26,17 +33,24 @@ function defaultDistEntryPath(entryPath: string): string {
     .replace(/\.tsx?$/, '.js');
 }
 
+type ResolvedServerConfig = Omit<Required<CreateServerConfig>, 'sitemap'> & {
+  sitemap?: { siteUrl: string };
+};
+
 class SsrServer {
   private app: Express;
   private vite: ViteDevServer | undefined;
-  private readonly config: Required<CreateServerConfig>;
+  private readonly config: ResolvedServerConfig;
   private readonly isProd: boolean;
   private _rendererCache?: {
     template: string;
     render: (url: string) => Promise<RenderResult>;
   };
   /** On-demand SSR cache: key = pathname + normalized search params, value = render result. Only used in production. */
-  private _ssrCache = new Map<string, { html: string; preloadedData: Record<string, unknown> }>();
+  private _ssrCache = new Map<
+    string,
+    { html: string; preloadedData: Record<string, unknown>; helmet?: RenderResult['helmet'] }
+  >();
 
   private normalizeCacheKey(url: string): string {
     const u = new URL(url, 'http://localhost');
@@ -53,6 +67,8 @@ class SsrServer {
       port: config.port ?? 5173,
       cssLinkInDev:
         config.cssLinkInDev ?? '<link rel="stylesheet" href="/src/index.css"></head>',
+      extraRoutes: config.extraRoutes ?? (() => {}),
+      sitemap: config.sitemap ?? undefined,
     };
     this.isProd = process.env.NODE_ENV === 'production';
     this.app = express();
@@ -91,7 +107,82 @@ class SsrServer {
   }
 
   private configureRequestHandler() {
+    if (this.config.sitemap?.siteUrl) {
+      this.registerSitemapRoutes(this.config.sitemap.siteUrl);
+    }
+    this.config.extraRoutes?.(this.app);
     this.app.use('*', (req, res, next) => this.handleRequest(req, res, next));
+  }
+
+  private registerSitemapRoutes(siteUrl: string) {
+    const baseUrl = siteUrl.replace(/\/$/, '');
+
+    this.app.get('/robots.txt', (_req, res) => {
+      res.type('text/plain');
+      res.send(`User-agent: *
+Allow: /
+
+Sitemap: ${baseUrl}/sitemap.xml`);
+    });
+
+    this.app.get('/sitemap.xml', async (_req, res) => {
+      const today = new Date().toISOString().split('T')[0];
+      const entries: SitemapEntry[] = [];
+
+      for (const route of getRoutes()) {
+        const cfg = route.sitemap;
+        if (!cfg?.include) continue;
+
+        const changefreq = cfg.changefreq ?? 'weekly';
+        const priority = cfg.priority ?? 0.5;
+
+        if (cfg.getEntries) {
+          try {
+            const dynamicEntries = await cfg.getEntries({ siteUrl: baseUrl });
+            for (const e of dynamicEntries) {
+              entries.push({
+                loc: e.loc,
+                lastmod: e.lastmod ?? today,
+                changefreq: e.changefreq ?? changefreq,
+                priority: e.priority ?? priority,
+              });
+            }
+          } catch (err) {
+            console.error(`[lovable-ssr] sitemap getEntries failed for ${route.path}:`, err);
+          }
+        } else if (!route.path.includes(':')) {
+          entries.push({
+            loc: `${baseUrl}${route.path === '/' ? '' : route.path}`,
+            lastmod: today,
+            changefreq,
+            priority,
+          });
+        }
+      }
+
+      const xml = this.buildSitemapXml(entries);
+      res.type('application/xml').send(xml);
+    });
+  }
+
+  private buildSitemapXml(entries: SitemapEntry[]): string {
+    const lines = entries.map(
+      (e) =>
+        `  <url><loc>${this.escapeXml(e.loc)}</loc><lastmod>${e.lastmod ?? ''}</lastmod><changefreq>${e.changefreq ?? 'weekly'}</changefreq><priority>${e.priority ?? 0.5}</priority></url>`
+    );
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${lines.join('\n')}
+</urlset>`;
+  }
+
+  private escapeXml(str: string): string {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
   }
 
   private async handleRequest(req: Request, res: Response, next: NextFunction) {
@@ -130,6 +221,7 @@ class SsrServer {
 
     let appHtml: string;
     let preloadedData: Record<string, unknown>;
+    let helmet: RenderResult['helmet'];
 
     // Constrói um contexto simples de request (cookies raw + headers) para o getData.
     const cookiesRaw = req.headers.cookie ?? '';
@@ -162,27 +254,32 @@ class SsrServer {
         if (cached) {
           appHtml = cached.html;
           preloadedData = cached.preloadedData;
+          helmet = cached.helmet;
         } else {
           const result = await render(url, { requestContext });
           appHtml = typeof result.html === 'string' ? result.html : '';
           preloadedData = result.preloadedData ?? {};
-          this._ssrCache.set(cacheKey, { html: appHtml, preloadedData });
+          helmet = result.helmet;
+          this._ssrCache.set(cacheKey, { html: appHtml, preloadedData, helmet });
         }
       } else {
         const result = await render(url, { requestContext });
         appHtml = typeof result.html === 'string' ? result.html : '';
         preloadedData = result.preloadedData ?? {};
+        helmet = result.helmet;
       }
     } else {
       const result = await render(url, { requestContext });
       appHtml = typeof result.html === 'string' ? result.html : '';
       preloadedData = result.preloadedData ?? {};
+      helmet = result.helmet;
     }
 
     let html = template.replace(
       '<div id="root"></div>',
       `<div id="root">${appHtml}</div>`
     );
+    html = this.injectHelmet(html, helmet);
     html = this.injectPreloadedData(html, preloadedData);
     if (this.vite) {
       const transformed = await this.vite.transformIndexHtml(url, html);
@@ -235,6 +332,13 @@ class SsrServer {
   private injectCssInDev(html: string): string {
     if (!this.vite) return html;
     return html.replace('</head>', this.config.cssLinkInDev);
+  }
+
+  private injectHelmet(html: string, helmet?: RenderResult['helmet']): string {
+    if (!helmet) return html;
+    const tags = [helmet.title, helmet.meta, helmet.link, helmet.script].filter(Boolean).join('\n');
+    if (!tags) return html;
+    return html.replace('</head>', `${tags}\n</head>`);
   }
 
   private injectPreloadedData(

@@ -2,6 +2,12 @@ import { type Express } from 'express';
 export interface RenderResult {
     html: string;
     preloadedData: Record<string, unknown>;
+    helmet?: {
+        title: string;
+        meta: string;
+        link: string;
+        script: string;
+    };
 }
 export interface CreateServerConfig {
     root: string;
@@ -10,6 +16,12 @@ export interface CreateServerConfig {
     port?: number;
     /** Optional link tag to inject in dev for CSS (e.g. '<link rel="stylesheet" href="/src/index.css">') */
     cssLinkInDev?: string;
+    /** Register routes before the SSR catch-all (e.g. sitemap.xml, robots.txt) */
+    extraRoutes?: (app: Express) => void;
+    /** Enable sitemap.xml and robots.txt from route registry. Routes with sitemap.include are included. */
+    sitemap?: {
+        siteUrl: string;
+    };
 }
 export declare function createServer(config: CreateServerConfig): Promise<{
     getApp: () => Express;

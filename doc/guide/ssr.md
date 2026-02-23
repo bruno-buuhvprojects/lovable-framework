@@ -18,6 +18,7 @@ const queryClient = new QueryClient();
 export interface RenderResult {
   html: string;
   preloadedData: Record<string, unknown>;
+  helmet?: { title: string; meta: string; link: string; script: string };
 }
 
 export async function render(url: string, options?: { requestContext?: unknown }): Promise<RenderResult> {
@@ -56,6 +57,12 @@ createServer({
   entryPath: 'src/ssr/entry-server.tsx',
   port: process.env.PORT ? Number(process.env.PORT) : 5173,
   cssLinkInDev: '<link rel="stylesheet" href="/src/index.css"></head>',
+  extraRoutes: (app) => {
+    // Register /sitemap.xml, /robots.txt, etc. before the SSR catch-all
+    app.get('/robots.txt', (_req, res) => {
+      res.type('text/plain').send('User-agent: *\nAllow: /\n');
+    });
+  },
 })
   .then((server) => server.listen())
   .catch(console.error);
