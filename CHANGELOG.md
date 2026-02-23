@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.19](https://github.com/bruno-buuhvprojects/lovable-ssr/compare/v0.1.18...v0.1.19) (2026-02-23)
+
+
+### Features
+
+* SEO e sitemap ([118dfc6](https://github.com/bruno-buuhvprojects/lovable-ssr/commit/118dfc6a8dfa59a0ff6d437305bef6a16c86a4f3))
+
 ### [0.1.18](https://github.com/bruno-buuhvprojects/lovable-ssr/compare/v0.1.17...v0.1.18) (2026-02-20)
 
 
